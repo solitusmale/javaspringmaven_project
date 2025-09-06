@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Book</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Add Book</h1>
+    <form th:action="@{/books/add}" th:object="${book}" method="post">
+        <div class="mb-3">
+            <label>Title</label>
+            <input type="text" class="form-control" th:field="*{title}" required>
+        </div>
+        <div class="mb-3">
+            <label>Publisher</label>
+            <select class="form-control" name="publisherId" required>
+                <option th:each="pub : ${publishers}" th:value="${pub.id}" th:text="${pub.name}"></option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label>Authors</label>
+            <select class="form-control" name="authorIds" multiple required>
+                <option th:each="author : ${authors}" th:value="${author.id}" th:text="${author.name}"></option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">Save</button>
+    </form>
+</div>
+</body>
+</html>
