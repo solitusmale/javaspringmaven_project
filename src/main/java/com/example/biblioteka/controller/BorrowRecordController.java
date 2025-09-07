@@ -35,7 +35,7 @@ public class BorrowRecordController {
 
     @PostMapping
     public BorrowRecord addBorrowRecord(@RequestBody BorrowRecord borrowRecord) {
-        userRepository.findById(borrowRecord.getUser().getUserId()).orElseThrow();
+        userRepository.findById(borrowRecord.getUser().getId()).orElseThrow();
         bookRepository.findById(borrowRecord.getBook().getBookId()).orElseThrow();
 
         return borrowRecordRepository.save(borrowRecord);

@@ -15,14 +15,15 @@ public class BookViewController {
     @Autowired
     private BookRepository bookRepository;
 
+    // Prikaz svih knjiga
     @GetMapping("/books/view")
     public String showBooks(Model model) {
         try {
             List<Book> books = bookRepository.findAll();
             model.addAttribute("books", books);
-            return "books"; // vraća books.html iz templates
+            return "books"; // books.html iz templates
         } catch (Exception e) {
-            e.printStackTrace(); // stack trace u konzoli za debag
+            e.printStackTrace();
             model.addAttribute("errorMessage", "Greška pri učitavanju knjiga: " + e.getMessage());
             return "error"; // napravi error.html u templates
         }

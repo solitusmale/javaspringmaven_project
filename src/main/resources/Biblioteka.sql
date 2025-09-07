@@ -1,118 +1,144 @@
 -- =======================================
--- Baza: mala_biblioteka
+-- Kreiranje baze
 -- =======================================
-
-CREATE DATABASE IF NOT EXISTS mala_biblioteka;
+DROP DATABASE IF EXISTS mala_biblioteka;
+CREATE DATABASE mala_biblioteka;
 USE mala_biblioteka;
 
 -- =======================================
--- Tabela: Users
+-- Tabela: roles
 -- =======================================
-CREATE TABLE IF NOT EXISTS Users (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    role ENUM('ADMIN','USER') NOT NULL DEFAULT 'USER'
+CREATE TABLE IF NOT EXISTS roles (
+    role_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
 );
 
 -- =======================================
--- Tabela: Authors
+-- Tabela: users
 -- =======================================
-CREATE TABLE IF NOT EXISTS Authors (
+CREATE TABLE IF NOT EXISTS users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
+-- =======================================
+-- ManyToMany tabela: user_roles
+-- =======================================
+CREATE TABLE IF NOT EXISTS user_roles (
+    user_id INT,
+    role_id INT,
+    PRIMARY KEY (user_id, role_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE
+);
+
+-- =======================================
+-- Tabela: authors
+-- =======================================
+CREATE TABLE IF NOT EXISTS authors (
     author_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
 
 -- =======================================
--- Tabela: Categories
+-- Tabela: categories
 -- =======================================
-CREATE TABLE IF NOT EXISTS Categories (
+CREATE TABLE IF NOT EXISTS categories (
     category_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL
 );
 
 -- =======================================
--- Tabela: Books
+-- Tabela: books
 -- =======================================
-CREATE TABLE IF NOT EXISTS Books (
+CREATE TABLE IF NOT EXISTS books (
     book_id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     category_id INT,
-    FOREIGN KEY (category_id) REFERENCES Categories(category_id)
+    FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL
 );
 
 -- =======================================
--- ManyToMany tabela: Book_Authors
+-- ManyToMany tabela: book_authors
 -- =======================================
-CREATE TABLE IF NOT EXISTS Book_Authors (
+CREATE TABLE IF NOT EXISTS book_authors (
     book_id INT,
     author_id INT,
     PRIMARY KEY (book_id, author_id),
-    FOREIGN KEY (book_id) REFERENCES Books(book_id),
-    FOREIGN KEY (author_id) REFERENCES Authors(author_id)
+    FOREIGN KEY (book_id) REFERENCES books(book_id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id) REFERENCES authors(author_id) ON DELETE CASCADE
 );
 
 -- =======================================
--- Tabela: BorrowRecords
+-- Tabela: borrow_records
 -- =======================================
-CREATE TABLE IF NOT EXISTS BorrowRecords (
+CREATE TABLE IF NOT EXISTS borrow_records (
     record_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     book_id INT,
     borrow_date DATE NOT NULL,
     return_date DATE,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id),
-    FOREIGN KEY (book_id) REFERENCES Books(book_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES books(book_id) ON DELETE CASCADE
 );
 
-
+-- =======================================
+-- Insert uloge
+-- =======================================
+INSERT INTO roles (name) VALUES ('ADMIN');
+INSERT INTO roles (name) VALUES ('USER');
 
 -- =======================================
--- Primer podataka
+-- Insert korisnici (BCrypt lozinke)
 -- =======================================
-INSERT INTO Users (username, password, role) VALUES
-('admin', 'admin123', 'ADMIN')
-ON DUPLICATE KEY UPDATE username=username;
+INSERT INTO users (username, password) VALUES 
+('admin', '$2a$12$nHceLEJpMDswh/PbcnhzUeiCs5tgVYSIEk6/1hpGWv95ZH.2M9iJG'),
+('user1', '$2a$12$zputSYfBWFzB9hd6Asqtn.UmyW.HDiy9c2FYm9hORx3AEZgSiUS9G'),
+('user2', '$2a$12$/R7mDLeiZ4B7Z9nKXeEYTeJDhMOFyF.lnf2Rbmht21ZoR5/c7AnbK');
 
-INSERT INTO Users (username, password, role) VALUES
-('user1', 'user123', 'USER')
-ON DUPLICATE KEY UPDATE username=username;
+-- =======================================
+-- Poveži korisnike i role
+-- =======================================
+INSERT INTO user_roles (user_id, role_id) VALUES 
+(1, 1), -- admin → ADMIN
+(2, 2), -- user1 → USER
+(3, 2); -- user2 → USER
 
-INSERT INTO Categories (name) VALUES ('Roman')
-ON DUPLICATE KEY UPDATE name=name;
+-- =======================================
+-- Insert kategorije
+-- =======================================
+INSERT INTO categories (name) VALUES 
+('Roman'),
+('Naučna fantastika'),
+('Biografija');
 
-INSERT INTO Categories (name) VALUES ('Naučna fantastika')
-ON DUPLICATE KEY UPDATE name=name;
+-- =======================================
+-- Insert autori
+-- =======================================
+INSERT INTO authors (name) VALUES 
+('J.K. Rowling'),
+('Isaac Asimov'),
+('Walter Isaacson');
 
-INSERT INTO Categories (name) VALUES ('Biografija')
-ON DUPLICATE KEY UPDATE name=name;
+-- =======================================
+-- Insert knjige
+-- =======================================
+INSERT INTO books (title, category_id) VALUES 
+('Harry Potter', 1),
+('Foundation', 2),
+('Steve Jobs', 3);
 
-INSERT INTO Authors (name) VALUES ('J.K. Rowling')
-ON DUPLICATE KEY UPDATE name=name;
+-- =======================================
+-- Poveži knjige i autore
+-- =======================================
+INSERT INTO book_authors (book_id, author_id) VALUES 
+(1, 1),
+(2, 2),
+(3, 3);
 
-INSERT INTO Authors (name) VALUES ('Isaac Asimov')
-ON DUPLICATE KEY UPDATE name=name;
-
-INSERT INTO Authors (name) VALUES ('Walter Isaacson')
-ON DUPLICATE KEY UPDATE name=name;
-
-INSERT INTO Books (title, category_id) VALUES ( 'Harry Potter', 1 )
-ON DUPLICATE KEY UPDATE title=title;
-
-INSERT INTO Books (title, category_id) VALUES ( 'Foundation', 2 )
-ON DUPLICATE KEY UPDATE title=title;
-
-INSERT INTO Books (title, category_id) VALUES ( 'Steve Jobs', 3 )
-ON DUPLICATE KEY UPDATE title=title;
-
-INSERT INTO Book_Authors (book_id, author_id) VALUES (1,1)
-ON DUPLICATE KEY UPDATE book_id=book_id;
-
-INSERT INTO Book_Authors (book_id, author_id) VALUES (2,2)
-ON DUPLICATE KEY UPDATE book_id=book_id;
-
-INSERT INTO Book_Authors (book_id, author_id) VALUES (3,3)
-ON DUPLICATE KEY UPDATE book_id=book_id;
-
-INSERT INTO BorrowRecords (user_id, book_id, borrow_date) VALUES (2,1,'2025-08-01')
-ON DUPLICATE KEY UPDATE record_id=record_id;
+-- =======================================
+-- Primer pozajmica
+-- =======================================
+INSERT INTO borrow_records (user_id, book_id, borrow_date) VALUES 
+(2, 1, '2025-08-01');

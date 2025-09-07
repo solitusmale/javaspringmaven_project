@@ -1,52 +1,69 @@
 package com.example.biblioteka.config;
 
+import com.example.biblioteka.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/css/**").permitAll() // home i login slobodni
-                .anyRequest().authenticated() // sve ostalo za logovane
-            )
-            .formLogin(form -> form
-                .loginPage("/login")                    // naša login stranica
-                .defaultSuccessUrl("/", true) // redirect posle login-a
-                .failureUrl("/login?error=true")       // prikaz greške
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutSuccessUrl("/login?logout=true") // posle logout-a
-                .permitAll()
-            );
+    private final CustomUserDetailsService userDetailsService;
 
-        return http.build();
+    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
     }
 
+    // ============================
+    // PasswordEncoder Bean
+    // ============================
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // ============================
+    // AuthenticationManager Bean
+    // ============================
     @Bean
-    public UserDetailsService users() {
-        UserDetails user = User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("admin123"))
-                .roles("USER")
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder())
+                .and()
                 .build();
-        return new InMemoryUserDetailsManager(user);
+    }
+
+    // ============================
+    // Security Filter Chain
+    // ============================
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/login", "/css/**").permitAll()
+                // Spring Security očekuje "ROLE_" prefiks kod hasRole
+                .requestMatchers("/books/manage/**").hasRole("ADMIN")
+                .requestMatchers("/books/view/**").hasAnyRole("USER", "ADMIN")
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/", true)
+                .failureUrl("/login?error=true")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutSuccessUrl("/login?logout=true")
+                .permitAll()
+            )
+            .csrf(csrf -> csrf.disable()); // opcionalno, ako koristiš Postman ili frontend bez CSRF tokena
+
+        return http.build();
     }
 }
