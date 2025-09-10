@@ -50,13 +50,23 @@ CREATE TABLE IF NOT EXISTS categories (
 );
 
 -- =======================================
+-- Tabela: publishers
+-- =======================================
+CREATE TABLE IF NOT EXISTS publishers (
+    publisher_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+-- =======================================
 -- Tabela: books
 -- =======================================
 CREATE TABLE IF NOT EXISTS books (
     book_id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     category_id INT,
-    FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL
+    publisher_id INT,
+    FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL,
+    FOREIGN KEY (publisher_id) REFERENCES publishers(publisher_id) ON DELETE SET NULL
 );
 
 -- =======================================
@@ -122,12 +132,20 @@ INSERT INTO authors (name) VALUES
 ('Walter Isaacson');
 
 -- =======================================
--- Insert knjige
+-- Insert izdavači
 -- =======================================
-INSERT INTO books (title, category_id) VALUES 
-('Harry Potter', 1),
-('Foundation', 2),
-('Steve Jobs', 3);
+INSERT INTO publishers (name) VALUES 
+('Bloomsbury'),
+('Gnome Press'),
+('Simon & Schuster');
+
+-- =======================================
+-- Insert knjige (sa publisher_id)
+-- =======================================
+INSERT INTO books (title, category_id, publisher_id) VALUES 
+('Harry Potter', 1, 1),
+('Foundation', 2, 2),
+('Steve Jobs', 3, 3);
 
 -- =======================================
 -- Poveži knjige i autore
