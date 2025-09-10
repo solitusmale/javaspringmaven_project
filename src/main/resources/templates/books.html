@@ -40,5 +40,12 @@
         </table>
     </div>
 </body>
+<script>
+  // svake 5 minuta ping server da produži sesiju
+  setInterval(() => {
+    fetch('/ping'); 
+  }, 5 * 60 * 1000);
+</script>
+
 
 </html>

@@ -46,8 +46,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/css/**").permitAll()
-                // Spring Security očekuje "ROLE_" prefiks kod hasRole
+                .requestMatchers("/", "/login", "/css/**", "/ping").permitAll()
                 .requestMatchers("/books/manage/**").hasRole("ADMIN")
                 .requestMatchers("/books/view/**").hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated()
@@ -61,6 +60,11 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutSuccessUrl("/login?logout=true")
                 .permitAll()
+            )
+            .sessionManagement(session -> session
+                .sessionFixation().migrateSession()
+                .maximumSessions(1) // samo jedna sesija po korisniku
+                .maxSessionsPreventsLogin(false)
             )
             .csrf(csrf -> csrf.disable()); // opcionalno, ako koristiš Postman ili frontend bez CSRF tokena
 
