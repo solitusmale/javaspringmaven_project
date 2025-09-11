@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Borrowed Books</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .borrows-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin: 50px auto;
+            max-width: 900px;
+        }
+        h2 {
+            color: #343a40;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        table {
+            background-color: #ffffff;
+        }
+        th {
+            background-color: #0d6efd;
+            color: #ffffff;
+            text-align: center;
+        }
+        td {
+            vertical-align: middle !important;
+            text-align: center;
+        }
+        .no-borrows {
+            text-align: center;
+            font-style: italic;
+            color: #6c757d;
+            padding: 20px 0;
+        }
+        .btn-back {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="borrows-card">
+        <h2>My Borrowed Books</h2>
+
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Borrow Date</th>
+                    <th>Return Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="borrow : ${borrows}">
+                    <td th:text="${borrow.book.title}"></td>
+                    <td th:text="${borrow.borrowDate}"></td>
+                    <td th:text="${borrow.returnDate != null ? borrow.returnDate : 'Not returned'}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(borrows)}">
+                    <td colspan="3" class="no-borrows">You have no borrowed books.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="text-center btn-back">
+            <a th:href="@{/}" class="btn btn-secondary">Back to Home</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

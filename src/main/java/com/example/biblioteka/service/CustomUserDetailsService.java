@@ -23,20 +23,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Učitaj korisnika iz baze zajedno sa rolama
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Korisnik nije pronađen: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        System.out.println("DEBUG -> Pokušan login za korisnika: " + username);
-        System.out.println("DEBUG -> Lozinka iz baze: " + user.getPassword());
-        System.out.println("DEBUG -> Role: " + user.getRoles().stream().map(r -> r.getName()).toList());
-
-        // Pretvori role u GrantedAuthority sa "ROLE_" prefiksom
         Set<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName())) // dodaj ROLE_ prefix
                 .collect(Collectors.toSet());
 
-        // Vrati Spring Security User objekat
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),

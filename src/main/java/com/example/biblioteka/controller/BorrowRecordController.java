@@ -1,17 +1,19 @@
 package com.example.biblioteka.controller;
 
 import com.example.biblioteka.model.BorrowRecord;
+import com.example.biblioteka.model.User;
 import com.example.biblioteka.repository.BorrowRecordRepository;
 import com.example.biblioteka.repository.UserRepository;
-import com.example.biblioteka.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/borrow")
+@RequestMapping("/api/borrow") // promenjen base path za REST API
 public class BorrowRecordController {
 
     @Autowired
@@ -20,39 +22,15 @@ public class BorrowRecordController {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private BookRepository bookRepository;
+    // Endpoint za pozajmice trenutno ulogovanog korisnika
+    @GetMapping("/my") // ostaje /my, ali je sada pod /api/borrow
+    public List<BorrowRecord> getMyBorrows(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    @GetMapping
-    public List<BorrowRecord> getAllBorrowRecords() {
-        return borrowRecordRepository.findAll();
-    }
-
-    @GetMapping("/{id}")
-    public Optional<BorrowRecord> getBorrowRecordById(@PathVariable Long id) {
-        return borrowRecordRepository.findById(id);
-    }
-
-    @PostMapping
-    public BorrowRecord addBorrowRecord(@RequestBody BorrowRecord borrowRecord) {
-        userRepository.findById(borrowRecord.getUser().getId()).orElseThrow();
-        bookRepository.findById(borrowRecord.getBook().getBookId()).orElseThrow();
-
-        return borrowRecordRepository.save(borrowRecord);
-    }
-
-    @PutMapping("/{id}")
-    public BorrowRecord updateBorrowRecord(@PathVariable Long id, @RequestBody BorrowRecord updatedRecord) {
-        BorrowRecord record = borrowRecordRepository.findById(id).orElseThrow();
-        record.setUser(updatedRecord.getUser());
-        record.setBook(updatedRecord.getBook());
-        record.setBorrowDate(updatedRecord.getBorrowDate());
-        record.setReturnDate(updatedRecord.getReturnDate());
-        return borrowRecordRepository.save(record);
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteBorrowRecord(@PathVariable Long id) {
-        borrowRecordRepository.deleteById(id);
+        return borrowRecordRepository.findAll()
+                .stream()
+                .filter(r -> r.getUser().getId().equals(user.getId()))
+                .collect(Collectors.toList());
     }
 }
