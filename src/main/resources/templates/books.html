@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Knjige</title>
@@ -9,7 +10,10 @@
 <body>
 <div class="container mt-5">
     <h1>Spisak knjiga</h1>
-    <a class="btn btn-success mb-3" th:href="@{/books/manage/add}">Dodaj knjigu</a>
+
+    <!-- Dodavanje knjige: samo ADMIN -->
+    <a class="btn btn-success mb-3" th:href="@{/books/manage/add}"
+       sec:authorize="hasRole('ADMIN')">Dodaj knjigu</a>
 
     <table class="table table-bordered table-striped">
         <thead class="table-dark">
@@ -37,12 +41,22 @@
                 </span>
             </td>
             <td>
+                <!-- Borrow: samo USER -->
+                <a th:href="@{'/borrow/add/' + ${book.bookId}}"
+                   class="btn btn-success btn-sm"
+                   sec:authorize="hasRole('USER')">Borrow</a>
+
+                <!-- Edit: samo ADMIN -->
                 <a th:href="@{'/books/manage/edit/' + ${book.bookId}}"
-                   class="btn btn-primary btn-sm">Izmeni</a>
+                   class="btn btn-primary btn-sm"
+                   sec:authorize="hasRole('ADMIN')">Edit</a>
+
+                <!-- Delete: samo ADMIN -->
                 <a th:href="@{'/books/manage/delete/' + ${book.bookId}}"
                    class="btn btn-danger btn-sm"
+                   sec:authorize="hasRole('ADMIN')"
                    onclick="return confirm('Da li ste sigurni da želite da obrišete knjigu?')">
-                    Obriši
+                    Delete
                 </a>
             </td>
         </tr>

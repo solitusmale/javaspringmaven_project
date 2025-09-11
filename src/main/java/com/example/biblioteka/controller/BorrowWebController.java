@@ -30,7 +30,9 @@ public class BorrowWebController {
     @Autowired
     private UserRepository userRepository;
 
-    // Pozajmi knjigu
+    // -----------------------------------
+    // Pozajmi knjigu (samo korisnik)
+    // -----------------------------------
     @GetMapping("/borrow/add/{bookId}")
     public String borrowBook(@PathVariable Integer bookId, 
                              @AuthenticationPrincipal UserDetails userDetails) {
@@ -47,11 +49,13 @@ public class BorrowWebController {
         record.setBorrowDate(LocalDate.now());
         borrowRecordRepository.save(record);
 
-        return "redirect:/borrow/my-web"; // promenjeno ime endpointa
+        return "redirect:/borrow/my"; 
     }
 
-    // Prikaz pozajmica trenutno prijavljenog korisnika (Thymeleaf)
-    @GetMapping("/borrow/my-web") // promenjeno ime endpointa
+    // -----------------------------------
+    // Prikaz mojih pozajmica (samo korisnik)
+    // -----------------------------------
+    @GetMapping("/borrow/my")
     public String myBorrows(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));

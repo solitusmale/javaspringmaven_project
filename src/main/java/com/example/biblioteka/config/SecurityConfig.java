@@ -26,6 +26,8 @@ public class SecurityConfig {
                 // MVC rute
                 .requestMatchers("/books/manage/**").hasRole("ADMIN") // dodavanje, izmena, brisanje knjiga
                 .requestMatchers("/books/view").hasAnyRole("USER", "ADMIN") // samo prikaz knjiga
+                .requestMatchers("/borrow/**").hasRole("USER")
+
                 
                 // login, resources, home
                 .requestMatchers("/login", "/css/**", "/js/**", "/images/**").permitAll()

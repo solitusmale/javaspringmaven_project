@@ -10,7 +10,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")   // <-- obavezno mapiraj na user_id iz baze
+    @Column(name = "user_id")  
     private Long id;
 
     @Column(name = "username", nullable = false, unique = true)
